@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.yumtao.Config;
+
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
@@ -17,21 +19,22 @@ public class ConsumerGroup {
 	private final String topic;
 	private ExecutorService executor;
 
-	public ConsumerGroup(String a_zookeeper, String a_groupId, String a_topic) {
-		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(a_zookeeper, a_groupId));
-		this.topic = a_topic;
+	public ConsumerGroup(String zk_url, String groupId, String topic) {
+		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(zk_url, groupId));
+		this.topic = topic;
 	}
 
 	/**
 	 * 创建客户端配置
-	 * @param zk_path
-	 * @param a_groupId
+	 * 
+	 * @param zk_url
+	 * @param groupId
 	 * @return
 	 */
-	private static ConsumerConfig createConsumerConfig(String zk_path, String a_groupId) {
+	private static ConsumerConfig createConsumerConfig(String zk_url, String groupId) {
 		Properties props = new Properties();
-		props.put("zookeeper.connect", zk_path);
-		props.put("group.id", a_groupId);
+		props.put("zookeeper.connect", zk_url);
+		props.put("group.id", groupId);
 		props.put("zookeeper.session.timeout.ms", "400");
 		props.put("zookeeper.sync.time.ms", "200");
 		props.put("auto.commit.interval.ms", "1000");
@@ -41,6 +44,7 @@ public class ConsumerGroup {
 
 	/**
 	 * 消费端拉取消息
+	 * 
 	 * @param numThreads group的consumer数
 	 */
 	public void run(int numThreads) {
@@ -57,7 +61,7 @@ public class ConsumerGroup {
 			threadNumber++;
 		}
 	}
-	
+
 	public void shutdown() {
 		if (consumer != null)
 			consumer.shutdown();
@@ -73,10 +77,10 @@ public class ConsumerGroup {
 	}
 
 	public static void main(String[] args) {
-		String zooKeeper = "singlenode:2181";
-		String groupId = "group5";
-		String topic = "first2";
-		int threads = Integer.parseInt("1");
+		String zooKeeper = Config.ZK_URL;
+		String groupId = Config.CONSUMER_GROUP;
+		String topic = Config.TOPIC;
+		int threads = Integer.parseInt(Config.THREAD_NUMS);
 
 		ConsumerGroup example = new ConsumerGroup(zooKeeper, groupId, topic);
 		example.run(threads);
