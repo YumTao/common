@@ -1,4 +1,4 @@
-package com.yumtao.product;
+package com.yumtao.product.mypartition;
 
 import kafka.producer.Partitioner;
 
